@@ -1,3 +1,4 @@
+import { Options } from '@angular-slider/ngx-slider/options';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgxFileDropEntry, FileSystemFileEntry, FileSystemDirectoryEntry } from 'ngx-file-drop';
@@ -5,6 +6,9 @@ import { Observable,forkJoin } from 'rxjs';
 import { KeywordResponse } from './models/KeywordResponse';
 import { ApiService } from './services/api.service';
 import { MockService } from './services/mock.service';
+
+import { UtilService } from './services/util.service';
+import { SortingService } from './services/sorting.service';
 
 
 
@@ -17,9 +21,18 @@ export class AppComponent {
 
   IS_DEVELOPMENT_MODE = true;
 
-  constructor(private apiService: ApiService, private mockService: MockService) { }
+  constructor(private apiService: ApiService, 
+              private mockService: MockService, 
+              private utilService:UtilService, 
+              private sortingService:SortingService) { }
 
   title = 'image-sort';
+
+  sliderValue: number = 75;
+  options: Options = {
+    floor: 50,
+    ceil: 100
+  };
 
   message : string = "";
   imagePath : any;
@@ -28,9 +41,9 @@ export class AppComponent {
 
   public files: File[] = [];
   public fileNames: string[] = [];
-  keywordResponses:KeywordResponse[] = [];
 
   public dropped(inputFiles: NgxFileDropEntry[]) {
+    console.log(this.sliderValue)
     if(!this.inputIsValid(inputFiles)){
       return;
     }
@@ -40,7 +53,7 @@ export class AppComponent {
     for (const droppedFile of inputFiles) {
       const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
       fileEntry.file((file: File) => {
-        this.fileNames.push(this.makeid(16)+encodeURIComponent(file.name));
+        this.fileNames.push(this.utilService.encodeFileName(file.name));
         this.files.push(file);
         const reader = new FileReader();
         reader.readAsDataURL(file); 
@@ -57,9 +70,9 @@ export class AppComponent {
 
   startRequests() {
     if(this.IS_DEVELOPMENT_MODE){
-      this.keywordResponses = this.mockService.mockKeywordResponses();
-      console.log("Mocking Keywordresponses: ");
-      console.log(this.keywordResponses);
+      console.log("Mocking Keywordresponses");
+      const sortedEntries = this.sortingService.sort(this.files,this.mockService.mockKeywordResponses(),this.sliderValue);
+      this.utilService.zipImages(sortedEntries);
       return;
     }
     console.log('Starting requests with names: '+this.fileNames);
@@ -103,10 +116,11 @@ export class AppComponent {
 
   getKeywords(){
     const myObserver = {
-      next: (x:KeywordResponse[]) => {
+      next: (keywordResponses:KeywordResponse[]) => {
         console.log('Keyword observer finished.');
-        console.log(x);
-        this.keywordResponses = x;
+        console.log(keywordResponses);
+        const sortedEntries = this.sortingService.sort(this.files,keywordResponses,this.sliderValue);
+        this.utilService.zipImages(sortedEntries);
       },
       error: (err: Error) => console.error('Keyword observer got an error: ' + err)
     };
@@ -141,14 +155,8 @@ export class AppComponent {
     //console.log(event);
   }
 
-  makeid(length: number) {
-    let result           = '';
-    const characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const charactersLength = characters.length;
-    for ( let i = 0; i < length; i++ ) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
+
+
+
   
 }

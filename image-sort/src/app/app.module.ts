@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { HttpClientModule } from '@angular/common/http';
+import { NgxSliderModule } from "@angular-slider/ngx-slider";
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -16,7 +17,8 @@ import { AppComponent } from './app.component';
     AppRoutingModule,
     FormsModule,
     NgxFileDropModule,
-    HttpClientModule
+    HttpClientModule,
+    NgxSliderModule
   ],
   providers: [],
   bootstrap: [AppComponent]

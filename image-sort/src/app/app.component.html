@@ -33,6 +33,8 @@
     
 </div> 
 
+<ngx-slider [(value)]="sliderValue" [options]="options"></ngx-slider>
+
 <div  *ngFor="let image of images" class="w-1/2">
     <img src='{{image}}'/>
 </div>

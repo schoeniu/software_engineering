@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Keyword, KeywordResponse } from '../models/KeywordResponse';
+import { KeywordResponse } from '../models/KeywordResponse';
 
 @Injectable({
   providedIn: 'root'
