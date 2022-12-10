@@ -1,14 +1,19 @@
+<!--toast lib for showing error and success messages-->
 <lib-ng-toast></lib-ng-toast>
+<!--loading overlay based on state-->
 <ngx-spinner bdColor = "rgba(0, 0, 0, 0.8)" size = "medium" color = "#fff" type = "line-scale-party" [fullScreen] = "true">
     <p class="text-white text-xl" >{{ getState }}</p>
 </ngx-spinner>
 
+<!--permanantly visible content-->
 <div class="flex m-3 justify-center">
     <div class="flex-col w-full sm:w-3/4 md:w-2/3 lg:w-1/2 justify-center">
-
+        <!--explanatory header image-->
         <img src='./../assets/flow.jpg' class="flex"/>
 
+        <!--slider for setting accuracy-->
         <ngx-slider  class=""  [(value)]="sliderValue" [options]="options"></ngx-slider>
+        <!--slider description label-->
         <div class="flex flex-col sm:flex-row  items-center text-md text-gray-500 mb-2">
             <div class="flex flex-row">
                 <img src='./../assets/Infobox_icon.svg' width="25" height="auto"/>
@@ -18,10 +23,11 @@
                 <span>Increase to match images more accurate. This might result in more folders.</span>
             </div>    
         </div> 
+        <!--upload area-->
         <div class="flex w-full justify-center " viewBox="0 0 24 100">
-            <ngx-file-drop dropZoneClassName="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
-                    contentClassName="flex w-full"
-                    (onFileDrop)="dropped($event)" class="w-full">
+            <ngx-file-drop  dropZoneClassName="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 
+                                               dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                            contentClassName="flex w-full" (onFileDrop)="imagesAdded($event)" class="w-full">
                 <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector" class="w-full h-full flex-col mt-3">
                     <button type="button" (click)="openFileSelector()" class="flex flex-col items-center justify-center w-full h-64">
                             <svg aria-hidden="true" class="w-10 h-10 mb-3 mt-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -33,7 +39,7 @@
                 </ng-template>
             </ngx-file-drop>
         </div>   
-        
+        <!--images preview-->
         <div class="flex container mx-auto gap-2 grid m-3
                     sm:grid-cols-2
                     md:grid-cols-3
