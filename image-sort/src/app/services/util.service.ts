@@ -38,7 +38,7 @@ export class UtilService {
     
     zip.generateAsync({ type: 'blob' }).then((content) => {
       saveAs(content, 'SortedImages.zip');
-      this.stateService.setState('');
+      this.stateService.showSuccess();
     });
   }
 }

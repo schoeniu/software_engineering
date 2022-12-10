@@ -43,6 +43,14 @@ export const handler = async(event) => {
         console.log('\n\n'+p.value+'\n');
         return p.value;
     });
+    for(const k of keywords){
+        if(typeof k ==='string' && JSON.parse(k).status === 'error'){
+            return {
+                statusCode: 500,
+                body: JSON.stringify(keywords),
+            };
+        }
+    }
     
     return {
         statusCode: 200,

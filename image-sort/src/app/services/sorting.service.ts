@@ -42,7 +42,7 @@ export class SortingService {
         this.deepLog(sortingEntries);
         emergencyExit--;
       }
-      if(emergencyExit>=0){
+      if(emergencyExit<=0){
         throw Error("Emergency exit");
       }
 

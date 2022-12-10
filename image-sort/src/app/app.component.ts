@@ -21,7 +21,7 @@ import { StateService } from './services/state.service';
 })
 export class AppComponent {
 
-  IS_DEVELOPMENT_MODE = true;
+  IS_DEVELOPMENT_MODE = false;
   MAX_NUMBER_OF_FILES = 15;
   MAX_FILE_SIZE = 10485760; //10MB in binary
 

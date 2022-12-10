@@ -33,4 +33,9 @@ export class StateService {
     this.toast.error({detail:"Error",summary:msg,sticky:false,position:'tr', duration:"5000"});
     this.setState('');
   }
+
+  showSuccess() {
+    this.toast.success({detail:"Success!",summary:'Your images are sorted.',sticky:false,position:'tr', duration:"5000"});
+    this.setState('');
+  }
 }

@@ -7,7 +7,9 @@
 /bazel-out
 
 # Node
-/node_modules
+/node_modules/*
+#include because of duration fix in library
+!/node_modules/ng-angular-popup
 npm-debug.log
 yarn-error.log
 
