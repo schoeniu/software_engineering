@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import JSZip, { file } from 'jszip';
-import FileSaver from 'file-saver';
+import { saveAs } from 'file-saver-es';
 import { SortingEntry } from '../models/SortingEntry';
+import { StateService } from './state.service';
+
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +13,7 @@ export class UtilService {
   
   ID_LENGTH = 16;
 
-  constructor() { }
+  constructor(private stateService: StateService) { }
 
   encodeFileName(fileName:string):string {
     let id           = '';
@@ -28,13 +30,15 @@ export class UtilService {
   }
 
   zipImages(sortingEntries: SortingEntry[]){
+    this.stateService.setState('Packaging images...')
     const zip = new JSZip();
     sortingEntries.forEach(s => {
       zip.file(s.folder+"/"+s.file.name,s.file);
     });
     
-    zip.generateAsync({ type: 'blob' }).then(function (content) {
-      FileSaver.saveAs(content, 'SortedImages.zip');
+    zip.generateAsync({ type: 'blob' }).then((content) => {
+      saveAs(content, 'SortedImages.zip');
+      this.stateService.setState('');
     });
   }
 }

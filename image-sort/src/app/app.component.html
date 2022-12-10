@@ -1,45 +1,48 @@
-<!--
-<div class="flex items-center justify-center w-full">
-    <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-        <div class="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg aria-hidden="true" class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">PNG or JPG (MAX. 10MB)</p>
+<lib-ng-toast></lib-ng-toast>
+<ngx-spinner bdColor = "rgba(0, 0, 0, 0.8)" size = "medium" color = "#fff" type = "line-scale-party" [fullScreen] = "true">
+    <p class="text-white text-xl" >{{ getState }}</p>
+</ngx-spinner>
+
+<div class="flex m-3 justify-center">
+    <div class="flex-col w-full sm:w-3/4 md:w-2/3 lg:w-1/2 justify-center">
+
+        <img src='./../assets/flow.jpg' class="flex"/>
+
+        <ngx-slider  class=""  [(value)]="sliderValue" [options]="options"></ngx-slider>
+        <div class="flex flex-col sm:flex-row  items-center text-md text-gray-500 mb-2">
+            <div class="flex flex-row">
+                <img src='./../assets/Infobox_icon.svg' width="25" height="auto"/>
+                <div class="font-semibold">Accuracy:&nbsp;</div>
+            </div>
+            <div class="flex flex-row sm:w-10/12">
+                <span>Increase to match images more accurate. This might result in more folders.</span>
+            </div>    
+        </div> 
+        <div class="flex w-full justify-center " viewBox="0 0 24 100">
+            <ngx-file-drop dropZoneClassName="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-200 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600"
+                    contentClassName="flex w-full"
+                    (onFileDrop)="dropped($event)" class="w-full">
+                <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector" class="w-full h-full flex-col mt-3">
+                    <button type="button" (click)="openFileSelector()" class="flex flex-col items-center justify-center w-full h-64">
+                            <svg aria-hidden="true" class="w-10 h-10 mb-3 mt-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="mb-2 text-md text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">PNG or JPG (MAX. 10MB)</p>
+                    </button>
+                </ng-template>
+            </ngx-file-drop>
+        </div>   
+        
+        <div class="flex container mx-auto gap-2 grid m-3
+                    sm:grid-cols-2
+                    md:grid-cols-3
+                    lg:grid-cols-4
+                    xl:grid-cols-5
+                ">
+            <div *ngFor="let image of images" class="flex items-center w-full rounded hover:shadow-2xl">
+                <img src='{{image}}' class="flex w-full" />
+            </div>
         </div>
-        <input id="dropzone-file" type="file" class="hidden" (change)="onFileChanged($event)" />
-    </label>
-</div> 
-<ngx-file-drop dropZoneLabel="Drop files here" (onFileDrop)="dropped($event)" 
-    (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)">
-    <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector">
-        <button type="button" (click)="openFileSelector()">Browse Files</button>
-    </ng-template>
-</ngx-file-drop>
-
--->
-<div class="flex items-center justify-center w-full">
-    <div class="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
-        <ngx-file-drop dropZoneLabel="Drop files here" (onFileDrop)="dropped($event)" (onFileOver)="fileOver($event)" (onFileLeave)="fileLeave($event)"
-            class="w-full flex-col ">
-            <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector" class="w-full h-full flex-col ">
-                <button type="button" (click)="openFileSelector()" class="flex flex-col items-center justify-center w-full">
-                        <svg aria-hidden="true" class="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG or JPG (MAX. 10MB)</p>
-                </button>
-            </ng-template>
-        </ngx-file-drop>
     </div>
-    
-</div> 
-
-<ngx-slider [(value)]="sliderValue" [options]="options"></ngx-slider>
-
-<div  *ngFor="let image of images" class="w-1/2">
-    <img src='{{image}}'/>
-</div>
-
-
-<div class="w-1/2">
-    <span>{{message}}</span>
 </div>

@@ -3,6 +3,7 @@ import { kMaxLength } from 'buffer';
 import { Keyword } from '../models/Keyword';
 import { KeywordResponse } from '../models/KeywordResponse';
 import { SortingEntry } from '../models/SortingEntry';
+import { StateService } from './state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { SortingEntry } from '../models/SortingEntry';
 export class SortingService {
   
 
-  constructor() { }
+  constructor(private stateService: StateService) { }
 
   threshold = 0.75;
 
@@ -18,34 +19,31 @@ export class SortingService {
   assignedCounter:number = 0;
 
   sort(files: File[],keywordResponses:KeywordResponse[],sliderValue:number):SortingEntry[]{
+      this.stateService.setState('Sorting images...')
       this.threshold = sliderValue/100;
       const sortingEntries:SortingEntry[]=[];
       for (const i in files) {
         const entry = new SortingEntry(files[i], keywordResponses[i].keywords);
         sortingEntries.push(entry);
       }
-      this.deepLog(sortingEntries);
+
       this.removeKeywordsBelowThreshold(sortingEntries);
-      this.deepLog(sortingEntries);
       this.assignFolderToOnlyKeyword(sortingEntries);
-      this.deepLog(sortingEntries);
       this.assignToExistingFolder(sortingEntries);
-      this.deepLog(sortingEntries);
       
-      let emergencyExit = 100;
+      let emergencyExit = 10000;
       while(this.assignedCounter<sortingEntries.length && emergencyExit>0){
-        console.log("Start loop")
         this.removeLowestKeyword(sortingEntries);
-        console.log("After remove lowest")
         this.deepLog(sortingEntries);
         this.assignFolderToOnlyKeyword(sortingEntries);
-        console.log("After assign only")
         this.deepLog(sortingEntries);
         
         this.assignToExistingFolder(sortingEntries);
-        console.log("After assign existing")
         this.deepLog(sortingEntries);
         emergencyExit--;
+      }
+      if(emergencyExit>=0){
+        throw Error("Emergency exit");
       }
 
 

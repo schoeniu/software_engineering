@@ -1,6 +1,6 @@
 import { Options } from '@angular-slider/ngx-slider/options';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormsModule } from '@angular/forms';
 import { NgxFileDropEntry, FileSystemFileEntry, FileSystemDirectoryEntry } from 'ngx-file-drop';
 import { Observable,forkJoin } from 'rxjs';
 import { KeywordResponse } from './models/KeywordResponse';
@@ -9,6 +9,8 @@ import { MockService } from './services/mock.service';
 
 import { UtilService } from './services/util.service';
 import { SortingService } from './services/sorting.service';
+import { NgxSpinnerService } from "ngx-spinner";
+import { StateService } from './services/state.service';
 
 
 
@@ -20,11 +22,16 @@ import { SortingService } from './services/sorting.service';
 export class AppComponent {
 
   IS_DEVELOPMENT_MODE = true;
+  MAX_NUMBER_OF_FILES = 15;
+  MAX_FILE_SIZE = 10485760; //10MB in binary
 
   constructor(private apiService: ApiService, 
               private mockService: MockService, 
               private utilService:UtilService, 
-              private sortingService:SortingService) { }
+              private sortingService:SortingService,
+              private spinner: NgxSpinnerService,
+              private stateService: StateService) { }
+
 
   title = 'image-sort';
 
@@ -34,45 +41,65 @@ export class AppComponent {
     ceil: 100
   };
 
-  message : string = "";
   imagePath : any;
   url : any;
   images : any[] = [];
+  tmpImages : any[] = [];
 
   public files: File[] = [];
   public fileNames: string[] = [];
 
   public dropped(inputFiles: NgxFileDropEntry[]) {
     console.log(this.sliderValue)
+    this.clearFiles();
     if(!this.inputIsValid(inputFiles)){
       return;
     }
-    this.fileNames = [];
-    this.files = [];
-    this.images = [];
     for (const droppedFile of inputFiles) {
       const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
+      this.stateService.setState('');
       fileEntry.file((file: File) => {
+        if(file.size>this.MAX_FILE_SIZE){
+          this.clearFiles();
+          this.stateService.handleError("Max file size is 10MB");
+          return;
+        }
         this.fileNames.push(this.utilService.encodeFileName(file.name));
         this.files.push(file);
         const reader = new FileReader();
         reader.readAsDataURL(file); 
         reader.onload = (_event) => { 
             const a = reader.result;
-            this.images.push(a);
+            this.tmpImages.push(a);
         }
         if(inputFiles.length === this.fileNames.length){
+          this.images = this.tmpImages;
           this.startRequests();
         }
       });
     }
   }
 
+  clearFiles(){
+    this.fileNames = [];
+    this.files = [];
+    this.images = [];
+    this.tmpImages = [];
+  }
+
   startRequests() {
+    this.stateService.setState('Uploading images...');
     if(this.IS_DEVELOPMENT_MODE){
       console.log("Mocking Keywordresponses");
-      const sortedEntries = this.sortingService.sort(this.files,this.mockService.mockKeywordResponses(),this.sliderValue);
-      this.utilService.zipImages(sortedEntries);
+      let sortedEntries;
+      try {
+        sortedEntries = this.sortingService.sort(this.files,this.mockService.mockKeywordResponses(),this.sliderValue);
+      } catch (error) {
+        this.stateService.handleError("Something went wrong when sorting.");
+        return;
+      }
+      //this.utilService.zipImages(sortedEntries);
+      this.stateService.setState('');
       return;
     }
     console.log('Starting requests with names: '+this.fileNames);
@@ -81,7 +108,10 @@ export class AppComponent {
         console.log('Observer got a next value: ' + s3PutURLs);
         this.uploadImages(s3PutURLs);
       },
-      error: (err: Error) => console.error('Observer got an error: ' + err)
+      error: (err: Error) => {
+        console.error('Observer got an error: ' + err);
+        this.stateService.handleError("Uploading images was unsuccessful.");
+      }
     };
 
     this.apiService.getPresignedPutURLs(this.fileNames).subscribe(myObserver);  
@@ -98,7 +128,10 @@ export class AppComponent {
         console.log('Upload observer finished.');
         this.getKeywords();
       },
-      error: (err: Error) => console.error('Upload observer got an error: ' + err)
+      error: (err: Error) => {
+        console.error('Uploading observer got an error: ' + err);
+        this.stateService.handleError("Uploading images was unsuccessful.");
+      }
     };
     forkJoin(observables).subscribe(myObserver);
   }
@@ -115,48 +148,55 @@ export class AppComponent {
   }
 
   getKeywords(){
+    this.stateService.setState('Analyzing images...');
     const myObserver = {
       next: (keywordResponses:KeywordResponse[]) => {
         console.log('Keyword observer finished.');
         console.log(keywordResponses);
-        const sortedEntries = this.sortingService.sort(this.files,keywordResponses,this.sliderValue);
+        let sortedEntries;
+        try {
+          sortedEntries = this.sortingService.sort(this.files,keywordResponses,this.sliderValue);
+        } catch (error) {
+          console.log('error')
+          this.stateService.handleError("Something went wrong when sorting.");
+          return;
+        }
         this.utilService.zipImages(sortedEntries);
       },
-      error: (err: Error) => console.error('Keyword observer got an error: ' + err)
+      error: (err: Error) => {
+        console.error('Keyword observer got an error: ' + err);
+        this.stateService.handleError("Analyzing images was unsuccessful.");
+      }
     };
     this.apiService.getKeywordsForImages(this.fileNames).subscribe(myObserver); 
   }
   
   public inputIsValid(files: NgxFileDropEntry[]):boolean{
-    if (files.length === 0)
-        return false;
+    if (files.length === 0){
+      return false;
+    }
+        
+    if (files.length > this.MAX_NUMBER_OF_FILES){
+      this.stateService.handleError("Max number of files is "+this.MAX_NUMBER_OF_FILES+".");
+      return false; 
+    }    
   
     for (const droppedFile of files) {
       if (!droppedFile.fileEntry.isFile){
-        this.message = "Directories are not supported";
+        this.stateService.handleError("Uploading directories is not supported.");
         return false;
       }
       const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
       const fileName = fileEntry.name.toLowerCase();
       if(!fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg") && !fileName.endsWith(".png")){
-        this.message = "Only PNG and JPG images are supported.";
+        this.stateService.handleError("Only PNG or JPG images are supported.");
         return false;
       }      
     }
-    this.message = "";
     return true;  
   }
 
-  public fileOver(event: any){
-    //console.log(event);
+  get getState(): string {
+    return this.stateService.state;
   }
-
-  public fileLeave(event: any){
-    //console.log(event);
-  }
-
-
-
-
-  
 }
