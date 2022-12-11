@@ -26,5 +26,11 @@ def lambda_handler(event, context):
     #return presigned S3 PUT URLs
     return {
         'statusCode': 200,
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type,Origin',
+            #Origin needs to be changed depending on if client is local or S3
+            'Access-Control-Allow-Origin': 'http://localhost:4200',
+            'Access-Control-Allow-Methods': 'GET'
+        },
         'body': json.dumps(URLs)
     }

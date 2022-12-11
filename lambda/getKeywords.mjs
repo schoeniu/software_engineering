@@ -43,6 +43,12 @@ export const handler = async(event) => {
         if(typeof k ==='string' && JSON.parse(k).status === 'error'){
             return {
                 statusCode: 500,
+                headers: {
+                    'Access-Control-Allow-Headers': 'Content-Type,Origin',
+                    //Origin needs to be changed depending on if client is local or S3
+                    'Access-Control-Allow-Origin': 'http://localhost:4200',
+                    'Access-Control-Allow-Methods': 'GET'
+                },
                 body: JSON.stringify(keywords),
             };
         }
@@ -50,6 +56,12 @@ export const handler = async(event) => {
     //return keywords
     return {
         statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Headers': 'Content-Type,Origin',
+            //Origin needs to be changed depending on if client is local or S3
+            'Access-Control-Allow-Origin': 'http://localhost:4200',
+            'Access-Control-Allow-Methods': 'GET'
+        },
         body: JSON.stringify(keywords),
     };
 };
