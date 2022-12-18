@@ -3,6 +3,7 @@ import { Keyword } from '../models/Keyword';
 import { KeywordResponse } from '../models/KeywordResponse';
 import { SortingEntry } from '../models/SortingEntry';
 import { StateService } from './state.service';
+import { UtilService } from './util.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,8 @@ import { StateService } from './state.service';
 //service for sorting the images to folders based on keywords
 export class SortingService {
   
-  constructor(private stateService: StateService) { }
+  constructor(private stateService: StateService,
+              private utilService : UtilService) { }
 
   //tracking already used keywords to be able to sort other images to them
   private assignedKeywords:string[] = [];
@@ -20,6 +22,9 @@ export class SortingService {
   //main sorting method
   sort(files: File[],keywordResponses:KeywordResponse[],sliderValue:number):SortingEntry[]{
       this.stateService.setState('Sorting images...')
+      //reset global variables
+      this.assignedKeywords = [];
+      this.assignedCounter = 0;
       //convert arguments to SortingEntry array for easier sorting
       const sortingEntries:SortingEntry[]=[];
       for (const i in files) {
@@ -50,7 +55,7 @@ export class SortingService {
   }
 
   //method for removing keywords below threshold (if there is no keyword above threshold, the top one is left)
-  removeKeywordsBelowThreshold(sortingEntries:SortingEntry[],threshold:number){
+  private removeKeywordsBelowThreshold(sortingEntries:SortingEntry[],threshold:number){
     for (const e of sortingEntries) {
       if(e.keywords.length > 1){
         const keysAboveThreshold:Keyword[] = [];
@@ -74,7 +79,7 @@ export class SortingService {
   }
 
   //method for assigning unassigned images to the only keyword they have
-  assignFolderToOnlyKeyword(sortingEntries:SortingEntry[]){
+  private assignFolderToOnlyKeyword(sortingEntries:SortingEntry[]){
     for (const e of sortingEntries) {
       if(e.folder === undefined && e.keywords.length === 1){
         e.folder = e.keywords[0].keyword;
@@ -86,7 +91,7 @@ export class SortingService {
 
   
   //method for assigning unassigned images to keywords which other images are already assigned to
-  assignToExistingFolder(sortingEntries:SortingEntry[]){
+  private assignToExistingFolder(sortingEntries:SortingEntry[]){
     for (const e of sortingEntries) {
       if(e.folder === undefined){
         const matchingKeywords:Keyword[] = [];
@@ -108,7 +113,7 @@ export class SortingService {
   }
 
   //method for removing the lowest score keyword from sortingEntries
-  removeLowestKeyword(sortingEntries:SortingEntry[]){
+  private removeLowestKeyword(sortingEntries:SortingEntry[]){
     for (const e of sortingEntries) {
       if(e.folder === undefined){
         const scores = e.keywords.map(k => k.score);
@@ -116,5 +121,15 @@ export class SortingService {
         e.keywords.splice(lowestScoreIndex,1);
       }  
     }
+  }
+
+  //matches compressedFiles array order to fileNames one, which gets messed up because of async behaviour
+  restoreCompressedImageOrder(compressedFiles: File[],fileNames:string[]){
+    const sortedFiles = [];
+    for (const name of fileNames) {
+      const idx =compressedFiles.findIndex(c=> c.name === this.utilService.decodeFileName(name));
+      sortedFiles.push(compressedFiles[idx]);
+    }
+    return sortedFiles;
   }
 }

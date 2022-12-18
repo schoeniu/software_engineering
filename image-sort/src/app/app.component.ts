@@ -65,6 +65,7 @@ export class AppComponent {
       //exit if not valid
       return;
     }
+    this.stateService.setState('Processing images...');
     //unmarshal files from NgxFileDropEntry objects
     for (const droppedFile of inputFiles) {
       const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
@@ -86,8 +87,9 @@ export class AppComponent {
         this.compressedFiles.push(await imageCompression(file,this.compressOptions));
         
         //when last file is unmarshaled, display images and start API calls for upload and analyzing
-        if(inputFiles.length === this.fileNames.length){
+        if(inputFiles.length === this.compressedFiles.length){
           this.images = this.tmpImages;
+          this.compressedFiles = this.sortingService.restoreCompressedImageOrder(this.compressedFiles,this.fileNames);
           this.getPresignedPutURLs();
         }
       });
@@ -170,6 +172,7 @@ export class AppComponent {
   
   //method for validating uploaded files
   private inputIsValid(files: NgxFileDropEntry[]):boolean{
+    this.stateService.setState('Validating images...');
     if (files.length === 0){
       return false;
     }
