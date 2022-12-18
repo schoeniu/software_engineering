@@ -100,6 +100,7 @@ export class AppComponent {
     this.files = [];
     this.images = [];
     this.tmpImages = [];
+    this.compressedFiles = [];
   }
 
   //method for getting presigned S3 PUT URLs
