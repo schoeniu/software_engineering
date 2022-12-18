@@ -41,8 +41,8 @@ export class AppComponent {
   };
   //image compression settings   
   compressOptions = {
-    maxSizeMB: 0.01,
-    maxWidthOrHeight: 100,
+    maxSizeMB: 0.5,
+    maxWidthOrHeight: 1920,
     useWebWorker: true
   }
   //array fpr displaying images
