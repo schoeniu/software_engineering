@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { NgxFileDropEntry, FileSystemFileEntry} from 'ngx-file-drop';
 import { Observable,forkJoin } from 'rxjs';
 import { KeywordResponse } from './models/KeywordResponse';
+import imageCompression  from 'browser-image-compression';
 
 import { ApiService } from './services/api.service';
 import { MockService } from './services/mock.service';
@@ -38,12 +39,20 @@ export class AppComponent {
     floor: 50,
     ceil: 100
   };
+  //image compression settings   
+  compressOptions = {
+    maxSizeMB: 0.01,
+    maxWidthOrHeight: 100,
+    useWebWorker: true
+  }
   //array fpr displaying images
   images : any[] = [];
   //temporaray images array which is assigned to the images array above once ready
   tmpImages : any[] = [];
   //image files
   files: File[] = [];
+  //compressed image files for upload
+  compressedFiles: File[] = [];
   //image file encoded names
   fileNames: string[] = [];
 
@@ -59,7 +68,7 @@ export class AppComponent {
     //unmarshal files from NgxFileDropEntry objects
     for (const droppedFile of inputFiles) {
       const fileEntry = droppedFile.fileEntry as FileSystemFileEntry;
-      fileEntry.file((file: File) => {
+      fileEntry.file(async (file: File) => {
         //validate file size
         if(file.size>this.MAX_FILE_SIZE){
           this.clearFiles();
@@ -72,7 +81,9 @@ export class AppComponent {
         //convert file to displayable image format
         const reader = new FileReader();
         reader.readAsDataURL(file); 
-        reader.onload = (_event) => this.tmpImages.push(reader.result);        
+        reader.onload = (_event) => this.tmpImages.push(reader.result);
+        //compress image for faster upload
+        this.compressedFiles.push(await imageCompression(file,this.compressOptions));
         
         //when last file is unmarshaled, display images and start API calls for upload and analyzing
         if(inputFiles.length === this.fileNames.length){
@@ -114,7 +125,7 @@ export class AppComponent {
     //prepare obervables with upload of images to S3
     const observables : Observable<any>[] = [];
     for (const idx in s3PutURLs) {
-      observables.push(this.apiService.putImgToS3(this.files[idx],s3PutURLs[idx]));
+      observables.push(this.apiService.putImgToS3(this.compressedFiles[idx],s3PutURLs[idx]));
     }
 
     const myObserver = {
