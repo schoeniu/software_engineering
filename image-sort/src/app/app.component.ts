@@ -128,7 +128,7 @@ export class AppComponent {
     //prepare obervables with upload of images to S3
     const observables : Observable<any>[] = [];
     for (const idx in s3PutURLs) {
-      observables.push(this.apiService.putImgToS3(this.compressedFiles[idx],s3PutURLs[idx]));
+      observables.push(this.apiService.putImagesToS3(this.compressedFiles[idx],s3PutURLs[idx]));
     }
 
     const myObserver = {

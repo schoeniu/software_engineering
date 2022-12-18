@@ -34,7 +34,7 @@ export const handler = async(event) => {
         }
     };
     //call API
-    const keywordPromises = urls.map(u => callEverypixel(defaultOptions, '/v1/keywords?url='+encodeURIComponent(u), ''));
+    const keywordPromises = urls.map(u => getKeywordsFromAPI(defaultOptions, '/v1/keywords?url='+encodeURIComponent(u), ''));
     const keywords = await Promise.allSettled(keywordPromises).then((promises) => {
         return promises.map(p => p.value);
     });
@@ -67,7 +67,7 @@ export const handler = async(event) => {
 };
 
 //function for executing get request to Everypixel API
-const callEverypixel = (defaultOptions, path, payload) => new Promise((resolve, reject) => {
+const getKeywordsFromAPI = (defaultOptions, path, payload) => new Promise((resolve, reject) => {
     const options = { ...defaultOptions, path, method: 'GET' };
     const req = https.request(options, res => {
         let buffer = "";

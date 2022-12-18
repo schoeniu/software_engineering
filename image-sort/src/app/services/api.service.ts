@@ -25,7 +25,7 @@ export class ApiService {
     return this.http.get<string[]>(this.AWS_BASE_URL + '/presignedPutURLs',{headers,params});
   }
   //method for uploading an image to S3 with the S3 PUT URL
-  putImgToS3(img: File, url:string): Observable<any> {
+  putImagesToS3(img: File, url:string): Observable<any> {
     return this.http.put(url,img);
   }
   //method for getting keywords for images
